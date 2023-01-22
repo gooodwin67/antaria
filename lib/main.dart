@@ -1,33 +1,47 @@
 import 'package:antaria/game/game.dart';
+import 'package:antaria/game/maps/map_provider.dart';
+import 'package:antaria/game/providers/provider.dart';
+import 'package:antaria/game/providers/provider2.dart';
 import 'package:flame/game.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(MyHomePage());
-}
-
-final game = MainGame();
+void main() => {
+      WidgetsFlutterBinding.ensureInitialized(),
+      runApp(MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => PlayerProvider()),
+          ChangeNotifierProvider(create: (_) => PlayerProvider2()),
+          ChangeNotifierProvider(create: (_) => MapProvider()),
+        ],
+        child: MyHomePage(),
+      ))
+    };
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final game = MainGame(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SafeArea(
-        child: Stack(
-          children: [
-            GameWidget(
-              game: game,
-              overlayBuilderMap: <String, Widget Function(BuildContext, Game)>{
-                'mainMenuOverlay': (context, game) => MainMenuOverlay(game)
-              },
-            ),
-          ],
+      home: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              GameWidget(
+                game: game,
+                overlayBuilderMap: <String,
+                    Widget Function(BuildContext, Game)>{
+                  'mainMenuOverlay': (context, game) =>
+                      MainMenuOverlay(context, game)
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -35,12 +49,15 @@ class MyHomePage extends StatelessWidget {
 }
 
 class MainMenuOverlay extends StatelessWidget {
-  const MainMenuOverlay(this.game, {super.key});
+  const MainMenuOverlay(this.context, this.game, {super.key});
 
   final Game game;
+  final context;
 
   @override
   Widget build(BuildContext context) {
+    //(game as MainGame).startGame(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Stack(
@@ -48,9 +65,7 @@ class MainMenuOverlay extends StatelessWidget {
           Container(
             alignment: Alignment.center,
             child: ElevatedButton(
-              onPressed: () {
-                (game as MainGame).startGame();
-              },
+              onPressed: () {},
               child: Text('Start Game'),
             ),
           ),

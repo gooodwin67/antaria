@@ -1,99 +1,94 @@
 import 'dart:math';
 
 import 'package:antaria/game/maps/map.dart';
+import 'package:antaria/game/maps/map_provider.dart';
 import 'package:antaria/game/player/player.dart';
 import 'package:antaria/game/player/tap.dart';
+import 'package:antaria/game/providers/provider.dart';
+import 'package:antaria/game/providers/provider2.dart';
+import 'package:antaria/main.dart';
 import 'package:flame/components.dart';
-
+import 'package:flame/palette.dart';
+import 'package:provider/provider.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 
 import 'package:flutter/material.dart';
 
-double speed = 0.1;
-double sinus = 0;
-double cosinus = 0;
-var targetPos = Vector2(0, 0);
-double distanceToPos = 0;
-double x1 = 0;
-double x2 = 0;
-double y1 = 0;
-double y2 = 0;
-
-enum GameState { intro, playing }
-
 class MainGame extends FlameGame with HasGameRef, TapDetector {
-  MainGame({super.children});
+  MainGame(this.context, {super.children});
 
-  GameState state = GameState.intro;
+  BuildContext context;
 
   TapComponent _tapComponent = TapComponent();
   PlayerComponent _playerComponent = PlayerComponent();
+  var playerProvider;
+  var playerProvider2;
+  var mapProvider;
+  var marks;
 
-  bool get isPlaying => state == GameState.playing;
-  bool get isIntro => state == GameState.intro;
+  ////////////////////////////////////////////////////////////////////////////
+  ///
+  ///
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    await add(MapComponent());
+
+    playerProvider = context.read<PlayerProvider>();
+    playerProvider2 = context.read<PlayerProvider2>();
+    mapProvider = context.read<MapProvider>();
+
+    await add(MapComponent(context));
     await add(_playerComponent);
+    _playerComponent.position = playerProvider2.playerPos;
     await add(_tapComponent);
 
     camera.followComponent(_playerComponent);
-    camera.worldBounds = Rect.fromLTRB(0, 0, sizeMap.x, sizeMap.y);
-
-    overlays.add('mainMenuOverlay');
+    camera.worldBounds =
+        Rect.fromLTRB(0, 0, mapProvider.sizeMap.x, mapProvider.sizeMap.y);
   }
+
+  ////////////////////////////////////////////////////////////////////////////
 
   @override
   bool onTapDown(TapDownInfo info) {
-    x1 = _playerComponent.position.x + _playerComponent.size.x / 2;
-    y1 = _playerComponent.position.y + _playerComponent.size.y / 2;
-    x2 = info.eventPosition.game.x;
-    y2 = info.eventPosition.game.y;
-    _tapComponent.position = Vector2(x2, y2);
-    _tapComponent.size = Vector2.all(30);
+    //playerProvider.tapDown(info, _playerComponent, _tapComponent);
+    marks =
+        playerProvider2.addMark(info, mapProvider.map, mapProvider.sizeTile);
+    // marks.forEach((e) {
+    //   add(e);
+    // });
+    //add(mark);
 
-    var playerPos = Vector2(x1, y1);
-    targetPos = Vector2(x2, y2);
+    // playerProvider2.playerStartRun(
+    //     info, _playerComponent, mapProvider.map, mapProvider.sizeTile);
 
-    var angle = atan2(targetPos.y - playerPos.y, targetPos.x - playerPos.x);
-
-    var per_Frame_Distance = 2;
-    sinus = sin(angle) * per_Frame_Distance;
-    cosinus = cos(angle) * per_Frame_Distance;
+    playerProvider2.findPath(
+        info, _playerComponent, mapProvider.map, mapProvider.sizeTile);
 
     return true;
   }
 
   bool onTapUp(TapUpInfo info) {
-    _tapComponent.size = Vector2.all(0);
+    //remove(mark);
     return true;
   }
 
   bool onTapCancel() {
-    _tapComponent.size = Vector2.all(0);
+    //remove(mark);
     return true;
   }
+
+  ////////////////////////////////////////////////////////////////////////////
 
   @override
   void update(double dt) {
     super.update(dt);
 
-    x1 = _playerComponent.position.x + _playerComponent.size.x / 2;
-    y1 = _playerComponent.position.y + _playerComponent.size.y / 2;
-    distanceToPos = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-    if (distanceToPos > 10) {
-      _playerComponent.position.x += cosinus;
-      _playerComponent.position.y += sinus;
-      print(distanceToPos);
-    }
-  }
+    _playerComponent.position += context.read<PlayerProvider2>().playerSpeed;
+    context.read<PlayerProvider2>().playerMove(_playerComponent);
 
-  void startGame() {
-    state = GameState.playing;
-
-    overlays.remove('mainMenuOverlay');
+    //playerProvider.playerGoToTap(_playerComponent);
   }
 }

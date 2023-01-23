@@ -38,7 +38,7 @@ class PlayerProvider2 with ChangeNotifier {
     //   for (int j = 0; j < map[i].length; j++) {
 
     //   }
-    // }
+    /// }
   }
 
   addMark(info, myMap, mySizeTile) {

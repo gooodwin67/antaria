@@ -1,4 +1,5 @@
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 
 class PlayerComponent extends SpriteComponent with HasGameRef {
   PlayerComponent({

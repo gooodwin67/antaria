@@ -12,7 +12,6 @@ import 'package:flame/palette.dart';
 import 'package:provider/provider.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
-
 import 'package:flutter/material.dart';
 
 class MainGame extends FlameGame with HasGameRef, TapDetector {
@@ -26,6 +25,9 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
   var playerProvider2;
   var mapProvider;
   var marks;
+  var _mapComponent;
+  double _sizeTile = 50;
+  List _map = [];
 
   ////////////////////////////////////////////////////////////////////////////
   ///
@@ -38,11 +40,12 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
     playerProvider = context.read<PlayerProvider>();
     playerProvider2 = context.read<PlayerProvider2>();
     mapProvider = context.read<MapProvider>();
+    _sizeTile = context.read<MapProvider>().sizeTile;
+    _map = context.read<MapProvider>().map;
+    _mapComponent = MapComponent(context);
 
-    await add(MapComponent(context));
+    await add(_mapComponent);
     await add(_playerComponent);
-    _playerComponent.position = playerProvider2.playerPos;
-    await add(_tapComponent);
 
     camera.followComponent(_playerComponent);
     camera.worldBounds =
@@ -53,30 +56,19 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
 
   @override
   bool onTapDown(TapDownInfo info) {
-    //playerProvider.tapDown(info, _playerComponent, _tapComponent);
-    marks =
-        playerProvider2.addMark(info, mapProvider.map, mapProvider.sizeTile);
-    // marks.forEach((e) {
-    //   add(e);
-    // });
-    //add(mark);
-
-    // playerProvider2.playerStartRun(
-    //     info, _playerComponent, mapProvider.map, mapProvider.sizeTile);
-
-    playerProvider2.findPath(
-        info, _playerComponent, mapProvider.map, mapProvider.sizeTile);
-
+    //playerProvider2.playerRun(info, _playerComponent, _map, _sizeTile);
+    playerProvider2.tapDown(
+        info, _mapComponent, _playerComponent, _map, _sizeTile);
     return true;
   }
 
   bool onTapUp(TapUpInfo info) {
-    //remove(mark);
+    playerProvider2.tapUp(_mapComponent, _playerComponent, _map, _sizeTile);
     return true;
   }
 
   bool onTapCancel() {
-    //remove(mark);
+    playerProvider2.tapUp(_mapComponent, _playerComponent, _map, _sizeTile);
     return true;
   }
 
@@ -84,11 +76,9 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
 
   @override
   void update(double dt) {
+    _playerComponent.position = Vector2(playerProvider2.playerPos.x * _sizeTile,
+        playerProvider2.playerPos.y * _sizeTile);
+    playerProvider2.pathFind(playerProvider2.playerPos, _map, _mapComponent);
     super.update(dt);
-
-    _playerComponent.position += context.read<PlayerProvider2>().playerSpeed;
-    context.read<PlayerProvider2>().playerMove(_playerComponent);
-
-    //playerProvider.playerGoToTap(_playerComponent);
   }
 }

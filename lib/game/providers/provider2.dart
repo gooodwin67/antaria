@@ -1,12 +1,14 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/palette.dart';
 import 'package:flutter/material.dart';
 
-class Pos extends SpriteComponent with HasGameRef {
-  Pos() : super();
-  @override
-  Future<void> onLoad() async {
-    super.onLoad();
+class RectPaint extends RectangleComponent {
+  RectPaint({position}) : super(position: position) {
+    size = Vector2(60, 60);
+    paint = Paint()..color = Colors.red;
   }
 }
 
@@ -20,100 +22,104 @@ class PlayerProvider2 with ChangeNotifier {
   );
   List marks = [];
 
-  Vector2 _playerSpeed = Vector2(0, 0);
-
-  final Vector2 _playerPos = Vector2(3 * 50, 3 * 50);
+  final Vector2 _playerPos = Vector2(2, 2);
   final Vector2 _targetPos = Vector2(3, 3);
   bool isPlayerRun = false;
   bool _isPlayerRunVert = false;
   bool _isPlayerRunHor = false;
+  var rectPaint;
+  bool lookingPath = false;
+  Vector2 targetPos = Vector2(0, 0);
 
-  Vector2 get playerSpeed => _playerSpeed;
   Vector2 get playerPos => _playerPos;
 
-  void findPath(info, player, myMap, mySizeTile) {
-    // List map = myMap;
-    // int sizeTile = mySizeTile;
-    // for (int i = 0; i < map.length; i++) {
-    //   for (int j = 0; j < map[i].length; j++) {
+////////////////////////////////////////////////////////////////////////
 
-    //   }
-    /// }
-  }
-
-  addMark(info, myMap, mySizeTile) {
-    marks.clear();
+  void tapDown(info, mapComponent, player, myMap, mySizeTile) {
     List map = myMap;
-    int sizeTile = mySizeTile;
-    for (int i = 0; i < map.length; i++) {
-      for (int j = 0; j < map[i].length; j++) {
-        if (info.eventPosition.game.x < j * 50 &&
-            info.eventPosition.game.y < i * 50) {
-          mark.position.x = (j - 1) * 50;
-          mark.position.y = (i - 1) * 50;
-          for (int k = i; k > _playerPos.y / 50 + 1; k--) {
-            marks.add(mark);
-          }
-          print(marks.length);
-          return marks;
-        }
-      }
-    }
-
-    return mark;
-  }
-
-  void playerStartRun(info, player, myMap, mySizeTile) {
-    List map = myMap;
-    int sizeTile = mySizeTile;
-    isPlayerRun = false;
+    double sizeTile = mySizeTile;
+    targetPos = Vector2(0, 0);
 
     for (int i = 0; i < map.length; i++) {
       for (int j = 0; j < map[i].length; j++) {
-        if (info.eventPosition.game.x < j * 50 &&
-            info.eventPosition.game.y < i * 50) {
-          _playerPos.x = player.position.x;
-          _playerPos.y = player.position.y;
-          _targetPos.x = (j - 1) * 50;
-          _targetPos.y = (i - 1) * 50;
-          isPlayerRun = true;
-          return;
+        if (info.eventPosition.game.x < j * sizeTile &&
+            info.eventPosition.game.y < i * sizeTile) {
+          targetPos = Vector2(j - 1.toDouble(), i - 1.toDouble());
+          rectPaint = RectPaint(
+              position: Vector2((j - 1) * sizeTile, (i - 1) * sizeTile));
+          mapComponent.add(rectPaint);
+          i = map.length;
+          break;
+        }
+      }
+    }
+
+    lookingPath = true;
+  }
+
+  pathFind(playerPos, map, mapComponent) {
+    if (lookingPath) {
+      var random = Random().nextInt(4);
+      print(random);
+      // print(playerPos);
+      // print(targetPos);
+      print(map[0].length);
+      var newPlayerPos = playerPos;
+
+      if (random == 0) {
+        if (playerPos.x < map[0].length - 2) {
+          playerPos.x += 1;
+        }
+      } else if (random == 1) {
+        if (playerPos.x > 1) {
+          playerPos.x -= 1;
+        }
+      } else if (random == 2) {
+        if (playerPos.y > 1) {
+          playerPos.y -= 1;
+        }
+      } else if (random == 3) {
+        if (playerPos.y < map.length - 2) {
+          playerPos.y += 1;
         }
       }
     }
   }
 
-  void tapDown(info, playerComponent, tapComponent) {
-    notifyListeners();
+  void tapUp(mapComponent, player, myMap, mySizeTile) {
+    List map = myMap;
+    double sizeTile = mySizeTile;
+    //mapComponent.remove(rectPaint);
   }
 
-  void playerMove(_playerComponent) {
-    if (isPlayerRun) {
-      if (_playerComponent.position.y < _targetPos.y && !_isPlayerRunHor) {
-        _playerSpeed.y = 1;
-        _isPlayerRunVert = true;
-      } else if (_playerComponent.position.y > _targetPos.y &&
-          !_isPlayerRunHor) {
-        _playerSpeed.y = -1;
-        _isPlayerRunVert = true;
-      } else {
-        _playerSpeed.y = 0;
-        _isPlayerRunVert = false;
+////////////////////////////////////////////////////////////////////////
 
-        if (_playerComponent.position.x < _targetPos.x && !_isPlayerRunVert) {
-          _playerSpeed.x = 1;
-          _isPlayerRunHor = true;
-        } else if (_playerComponent.position.x > _targetPos.x &&
-            !_isPlayerRunVert) {
-          _playerSpeed.x = -1;
-          _isPlayerRunHor = true;
-        } else {
-          _playerSpeed.x = 0;
-          _isPlayerRunHor = false;
-        }
-      }
+  void playerRun(info, player, myMap, mySizeTile) {
+    List _map = myMap;
+    double _sizeTile = mySizeTile;
+    int _x = (player.position.x / _sizeTile).toInt();
+    int _y = (player.position.y / _sizeTile).toInt();
+
+    if (_map[_y][_x + 1] == '1') {
+      _playerPos.x = _playerPos.x + 1;
+
+      _map[_y][_x + 1] = 'f';
+    } else if (_map[_y][_x - 1] == '1') {
+      _playerPos.x = _playerPos.x - 1;
+      _map[_y][_x - 1] = 'f';
+    } else if (_map[_y + 1][_x] == '1') {
+      _playerPos.y = _playerPos.y + 1;
+      _map[_y + 1][_x] = 'f';
+    } else if (_map[_y - 1][_x] == '1') {
+      _playerPos.y = _playerPos.y - 1;
+
+      // player.add(MoveEffect.to(
+      //   Vector2(500, 500),
+      //   EffectController(duration: 1.0),
+      // ));
+
+      _map[_y - 1][_x] = 'f';
     }
-
     notifyListeners();
   }
 }

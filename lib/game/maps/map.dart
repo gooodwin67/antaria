@@ -16,10 +16,15 @@ class MapComponent extends PositionComponent with HasGameRef {
 
     for (int i = 0; i < map.length; i++) {
       for (int j = 0; j < map[i].length; j++) {
-        if (map[i][j] == 1) {
+        if (map[i][j] == 'w') {
           await add(StoneComponent(position: Vector2(j * 50, i * 50)));
-        } else if (map[i][j] == 0) {
+        } else if (map[i][j] == 'f') {
           await add(GrassComponent(position: Vector2(j * 50, i * 50)));
+          await add(TextComponent(
+              position: Vector2(j * 50, i * 50),
+              text: map[i][j],
+              textRenderer: TextPaint(
+                  style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)))));
         }
       }
     }
@@ -27,7 +32,7 @@ class MapComponent extends PositionComponent with HasGameRef {
 }
 
 class GrassComponent extends SpriteComponent with HasGameRef {
-  GrassComponent({Vector2? position}) : super(position: position);
+  GrassComponent({Vector2? position, int}) : super(position: position);
   @override
   Future<void> onLoad() async {
     super.onLoad();
@@ -41,6 +46,7 @@ class StoneComponent extends SpriteComponent with HasGameRef {
   @override
   Future<void> onLoad() async {
     super.onLoad();
+
     sprite = await gameRef.loadSprite('stone.png');
     size = Vector2(50, 50);
   }

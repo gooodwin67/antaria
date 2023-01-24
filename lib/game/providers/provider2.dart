@@ -7,8 +7,15 @@ import 'package:flutter/material.dart';
 
 class RectPaint extends RectangleComponent {
   RectPaint({position}) : super(position: position) {
-    size = Vector2(60, 60);
-    paint = Paint()..color = Colors.red;
+    size = Vector2(50, 50);
+    paint = Paint()..color = Color.fromARGB(146, 54, 244, 63);
+  }
+}
+
+class RectPaintRed extends RectangleComponent {
+  RectPaintRed({position}) : super(position: position) {
+    size = Vector2(50, 50);
+    paint = Paint()..color = Color.fromARGB(146, 244, 67, 54);
   }
 }
 
@@ -22,14 +29,17 @@ class PlayerProvider2 with ChangeNotifier {
   );
   List marks = [];
 
-  final Vector2 _playerPos = Vector2(2, 2);
+  Vector2 _playerPos = Vector2(2, 2);
   final Vector2 _targetPos = Vector2(3, 3);
   bool isPlayerRun = false;
   bool _isPlayerRunVert = false;
   bool _isPlayerRunHor = false;
   var rectPaint;
+  var rectPaintPath;
+  late List reachable = [_playerPos];
   bool lookingPath = false;
   Vector2 targetPos = Vector2(0, 0);
+  List newMap = [];
 
   Vector2 get playerPos => _playerPos;
 
@@ -37,6 +47,7 @@ class PlayerProvider2 with ChangeNotifier {
 
   void tapDown(info, mapComponent, player, myMap, mySizeTile) {
     List map = myMap;
+
     double sizeTile = mySizeTile;
     targetPos = Vector2(0, 0);
 
@@ -55,41 +66,88 @@ class PlayerProvider2 with ChangeNotifier {
     }
 
     lookingPath = true;
+    pathFind(playerPos, map, mapComponent, sizeTile);
   }
 
-  pathFind(playerPos, map, mapComponent) {
-    if (lookingPath) {
-      var random = Random().nextInt(4);
-      print(random);
-      // print(playerPos);
-      // print(targetPos);
-      print(map[0].length);
-      var newPlayerPos = playerPos;
+  pathFind(playerPos, map, mapComponent, sizeTile) async {
+    print(playerPos);
+    //print(targetPos);
+    if (newMap.isEmpty) newMap = map;
 
-      if (random == 0) {
-        if (playerPos.x < map[0].length - 2) {
-          playerPos.x += 1;
-        }
-      } else if (random == 1) {
-        if (playerPos.x > 1) {
-          playerPos.x -= 1;
-        }
-      } else if (random == 2) {
-        if (playerPos.y > 1) {
-          playerPos.y -= 1;
-        }
-      } else if (random == 3) {
-        if (playerPos.y < map.length - 2) {
-          playerPos.y += 1;
-        }
+    //reachable = [playerPos];
+
+    if (reachable.isNotEmpty) {
+      newMap[(reachable[0].x).toInt()][(reachable[0].y).toInt()] = '0';
+      if (newMap[(_playerPos.y).toInt() - 1][(_playerPos.x).toInt()] == 'f') {
+        reachable.add(Vector2((_playerPos.y) - 1, (_playerPos.x)));
+        rectPaintPath = RectPaint(
+            position: Vector2(
+                (_playerPos.y - 1) * sizeTile, (_playerPos.x) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      } else {
+        newMap[(_playerPos.y).toInt() - 1][(_playerPos.x).toInt()] = '0';
+        rectPaintPath = RectPaintRed(
+            position: Vector2(
+                (_playerPos.y - 1) * sizeTile, (_playerPos.x) * sizeTile));
+        mapComponent.add(rectPaintPath);
       }
+
+      if (newMap[(_playerPos.y).toInt() + 1][(_playerPos.x).toInt()] == 'f') {
+        reachable.add(Vector2((_playerPos.y) + 1, (_playerPos.x)));
+        rectPaintPath = RectPaint(
+            position: Vector2(
+                (_playerPos.y + 1) * sizeTile, (_playerPos.x) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      } else {
+        newMap[(_playerPos.y).toInt() + 1][(_playerPos.x).toInt()] = '0';
+        rectPaintPath = RectPaintRed(
+            position: Vector2(
+                (_playerPos.y + 1) * sizeTile, (_playerPos.x) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      }
+
+      if (newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() + 1] == 'f') {
+        reachable.add(Vector2((_playerPos.y), (_playerPos.x) + 1));
+        rectPaintPath = RectPaint(
+            position: Vector2(
+                (_playerPos.y) * sizeTile, (_playerPos.x + 1) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      } else {
+        newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() + 1] = '0';
+        rectPaintPath = RectPaintRed(
+            position: Vector2(
+                (_playerPos.y) * sizeTile, (_playerPos.x + 1) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      }
+
+      if (newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() - 1] == 'f') {
+        reachable.add(Vector2((_playerPos.y), (_playerPos.x) - 1));
+        rectPaintPath = RectPaint(
+            position: Vector2(
+                (_playerPos.y) * sizeTile, (_playerPos.x - 1) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      } else {
+        newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() - 1] = '0';
+        rectPaintPath = RectPaintRed(
+            position: Vector2(
+                (_playerPos.y) * sizeTile, (_playerPos.x - 1) * sizeTile));
+        mapComponent.add(rectPaintPath);
+      }
+
+      rectPaintPath = RectPaintRed(
+          position:
+              Vector2((_playerPos.y) * sizeTile, (_playerPos.x) * sizeTile));
+      mapComponent.add(rectPaintPath);
+      await reachable.removeAt(0);
+      Future.delayed(const Duration(milliseconds: 500), () {})
+          .then((value) => _playerPos = reachable[0]);
     }
   }
 
   void tapUp(mapComponent, player, myMap, mySizeTile) {
     List map = myMap;
     double sizeTile = mySizeTile;
-    //mapComponent.remove(rectPaint);
+    mapComponent.remove(rectPaint);
   }
 
 ////////////////////////////////////////////////////////////////////////

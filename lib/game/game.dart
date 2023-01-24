@@ -78,7 +78,7 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
   void update(double dt) {
     _playerComponent.position = Vector2(playerProvider2.playerPos.x * _sizeTile,
         playerProvider2.playerPos.y * _sizeTile);
-    playerProvider2.pathFind(playerProvider2.playerPos, _map, _mapComponent);
+    //playerProvider2.pathFind(playerProvider2.playerPos, _map, _mapComponent);
     super.update(dt);
   }
 }

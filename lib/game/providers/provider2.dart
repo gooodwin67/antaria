@@ -70,77 +70,91 @@ class PlayerProvider2 with ChangeNotifier {
   }
 
   pathFind(playerPos, map, mapComponent, sizeTile) async {
-    print(playerPos);
-    //print(targetPos);
-    if (newMap.isEmpty) newMap = map;
+    //print(playerPos);
+    //print(newMap);
+    if (newMap.isEmpty) {
+      newMap = List.generate(
+          map[0].length, (_) => new List.generate(map.length, (index) => '1'));
 
-    //reachable = [playerPos];
+      for (int i = 0; i < map[0].length; i++) {
+        for (int j = map.length - 1; j >= 0; j--) {
+          //print('i$i--j$j');
+          newMap[i][j] = map[j][i];
+        }
+      }
+    }
+    var closedWall = 0;
+
+    var node = reachable.first;
+    print(reachable);
 
     if (reachable.isNotEmpty) {
-      newMap[(reachable[0].x).toInt()][(reachable[0].y).toInt()] = '0';
-      if (newMap[(_playerPos.y).toInt() - 1][(_playerPos.x).toInt()] == 'f') {
-        reachable.add(Vector2((_playerPos.y) - 1, (_playerPos.x)));
+      if (newMap[(node.x - 1).toInt()][(node.y).toInt()] == 'f') {
+        reachable.insert(0, Vector2((node.x) - 1, (node.y)));
         rectPaintPath = RectPaint(
-            position: Vector2(
-                (_playerPos.y - 1) * sizeTile, (_playerPos.x) * sizeTile));
+            position: Vector2((node.x - 1) * sizeTile, (node.y) * sizeTile));
         mapComponent.add(rectPaintPath);
-      } else {
-        newMap[(_playerPos.y).toInt() - 1][(_playerPos.x).toInt()] = '0';
+      } else if (newMap[(node.x - 1).toInt()][(node.y).toInt()] != '0') {
+        closedWall++;
         rectPaintPath = RectPaintRed(
-            position: Vector2(
-                (_playerPos.y - 1) * sizeTile, (_playerPos.x) * sizeTile));
+            position: Vector2((node.x - 1) * sizeTile, (node.y) * sizeTile));
         mapComponent.add(rectPaintPath);
+        newMap[(node.x - 1).toInt()][(node.y).toInt()] = '0';
+        reachable.remove(Vector2((node.x) - 1, (node.y)));
       }
-
-      if (newMap[(_playerPos.y).toInt() + 1][(_playerPos.x).toInt()] == 'f') {
-        reachable.add(Vector2((_playerPos.y) + 1, (_playerPos.x)));
+      if (newMap[(node.x + 1).toInt()][(node.y).toInt()] == 'f') {
+        reachable.insert(0, Vector2((node.x) + 1, (node.y)));
         rectPaintPath = RectPaint(
-            position: Vector2(
-                (_playerPos.y + 1) * sizeTile, (_playerPos.x) * sizeTile));
+            position: Vector2((node.x + 1) * sizeTile, (node.y) * sizeTile));
         mapComponent.add(rectPaintPath);
-      } else {
-        newMap[(_playerPos.y).toInt() + 1][(_playerPos.x).toInt()] = '0';
+      } else if (newMap[(node.x + 1).toInt()][(node.y).toInt()] != '0') {
+        closedWall++;
         rectPaintPath = RectPaintRed(
-            position: Vector2(
-                (_playerPos.y + 1) * sizeTile, (_playerPos.x) * sizeTile));
+            position: Vector2((node.x + 1) * sizeTile, (node.y) * sizeTile));
         mapComponent.add(rectPaintPath);
+        newMap[(node.x + 1).toInt()][(node.y).toInt()] = '0';
+        reachable.remove(Vector2((node.x) + 1, (node.y)));
       }
-
-      if (newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() + 1] == 'f') {
-        reachable.add(Vector2((_playerPos.y), (_playerPos.x) + 1));
+      if (newMap[(node.x).toInt()][(node.y + 1).toInt()] == 'f') {
+        reachable.insert(0, Vector2((node.x), (node.y) + 1));
         rectPaintPath = RectPaint(
-            position: Vector2(
-                (_playerPos.y) * sizeTile, (_playerPos.x + 1) * sizeTile));
+            position: Vector2((node.x) * sizeTile, (node.y + 1) * sizeTile));
         mapComponent.add(rectPaintPath);
-      } else {
-        newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() + 1] = '0';
+      } else if (newMap[(node.x).toInt()][(node.y + 1).toInt()] != '0') {
+        closedWall++;
         rectPaintPath = RectPaintRed(
-            position: Vector2(
-                (_playerPos.y) * sizeTile, (_playerPos.x + 1) * sizeTile));
+            position: Vector2((node.x) * sizeTile, (node.y + 1) * sizeTile));
         mapComponent.add(rectPaintPath);
+        newMap[(node.x).toInt()][(node.y + 1).toInt()] = '0';
+        reachable.remove(Vector2((node.x), (node.y) + 1));
       }
-
-      if (newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() - 1] == 'f') {
-        reachable.add(Vector2((_playerPos.y), (_playerPos.x) - 1));
+      if (newMap[(node.x).toInt()][(node.y - 1).toInt()] == 'f') {
+        reachable.insert(0, Vector2((node.x), (node.y) - 1));
         rectPaintPath = RectPaint(
-            position: Vector2(
-                (_playerPos.y) * sizeTile, (_playerPos.x - 1) * sizeTile));
+            position: Vector2((node.x) * sizeTile, (node.y - 1) * sizeTile));
         mapComponent.add(rectPaintPath);
-      } else {
-        newMap[(_playerPos.y).toInt()][(_playerPos.x).toInt() - 1] = '0';
+      } else if (newMap[(node.x).toInt()][(node.y - 1).toInt()] != '0') {
+        closedWall++;
         rectPaintPath = RectPaintRed(
-            position: Vector2(
-                (_playerPos.y) * sizeTile, (_playerPos.x - 1) * sizeTile));
+            position: Vector2((node.x) * sizeTile, (node.y - 1) * sizeTile));
         mapComponent.add(rectPaintPath);
+        newMap[(node.x).toInt()][(node.y - 1).toInt()] = '0';
+        reachable.remove(Vector2((node.x), (node.y) - 1));
       }
+      if (closedWall == 4) {}
 
+      reachable.removeLast();
+
+      newMap[(node.x).toInt()][(node.y).toInt()] = '0';
       rectPaintPath = RectPaintRed(
-          position:
-              Vector2((_playerPos.y) * sizeTile, (_playerPos.x) * sizeTile));
+          position: Vector2((node.x) * sizeTile, (node.y) * sizeTile));
       mapComponent.add(rectPaintPath);
-      await reachable.removeAt(0);
-      Future.delayed(const Duration(milliseconds: 500), () {})
-          .then((value) => _playerPos = reachable[0]);
+
+      //print(newMap[(_playerPos.x).toInt()][(_playerPos.y).toInt()]);
+
+      //Future.delayed(const Duration(milliseconds: 0), () {})
+      _playerPos = reachable.first;
+      print(reachable);
     }
   }
 

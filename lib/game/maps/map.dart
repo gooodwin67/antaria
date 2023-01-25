@@ -22,7 +22,7 @@ class MapComponent extends PositionComponent with HasGameRef {
           await add(GrassComponent(position: Vector2(j * 50, i * 50)));
           await add(TextComponent(
               position: Vector2(j * 50, i * 50),
-              text: '$j---$i',
+              text: '$i---$j',
               textRenderer: TextPaint(
                   style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)))));
         }

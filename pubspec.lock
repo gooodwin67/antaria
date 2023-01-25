@@ -123,6 +123,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.2"
+  pathfinding:
+    dependency: "direct main"
+    description:
+      name: pathfinding
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.1"
   provider:
     dependency: "direct main"
     description:

@@ -4,6 +4,9 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/palette.dart';
 import 'package:flutter/material.dart';
+import 'package:pathfinding/core/grid.dart';
+import 'package:pathfinding/finders/astar.dart';
+import 'package:pathfinding/finders/jps.dart';
 
 class RectPaint extends RectangleComponent {
   RectPaint({position}) : super(position: position) {
@@ -35,7 +38,8 @@ class PlayerProvider2 with ChangeNotifier {
   bool _isPlayerRunVert = false;
   bool _isPlayerRunHor = false;
   var rectPaint;
-  var rectPaintPath;
+  late Component rectPaintRed;
+  var targetBlock = Vector2(3, 10);
   late List reachable = [_playerPos];
   bool lookingPath = false;
   Vector2 targetPos = Vector2(0, 0);
@@ -72,96 +76,51 @@ class PlayerProvider2 with ChangeNotifier {
   pathFind(playerPos, map, mapComponent, sizeTile) async {
     //print(playerPos);
     //print(newMap);
-    if (newMap.isEmpty) {
-      newMap = List.generate(
-          map[0].length, (_) => new List.generate(map.length, (index) => '1'));
 
-      for (int i = 0; i < map[0].length; i++) {
-        for (int j = map.length - 1; j >= 0; j--) {
-          //print('i$i--j$j');
-          newMap[i][j] = map[j][i];
+    newMap = List.generate(
+        map[0].length, (_) => new List.generate(map.length, (index) => 0));
+
+    for (int i = 0; i < map[0].length; i++) {
+      for (int j = map.length - 1; j >= 0; j--) {
+        if (map[j][i] == 'w') {
+          newMap[i][j] = 1;
+        } else {
+          newMap[i][j] == 0;
         }
       }
     }
-    var closedWall = 0;
+    //print(newMap);
 
-    var node = reachable.first;
-    print(reachable);
+    int targetX = (targetPos.x).toInt();
+    int targetY = (targetPos.y).toInt();
+    int playerX = (_playerPos.x).toInt();
+    int playerY = (_playerPos.y).toInt();
+    bool isFind = false;
 
-    if (reachable.isNotEmpty) {
-      if (newMap[(node.x - 1).toInt()][(node.y).toInt()] == 'f') {
-        reachable.insert(0, Vector2((node.x) - 1, (node.y)));
-        rectPaintPath = RectPaint(
-            position: Vector2((node.x - 1) * sizeTile, (node.y) * sizeTile));
-        mapComponent.add(rectPaintPath);
-      } else if (newMap[(node.x - 1).toInt()][(node.y).toInt()] != '0') {
-        closedWall++;
-        rectPaintPath = RectPaintRed(
-            position: Vector2((node.x - 1) * sizeTile, (node.y) * sizeTile));
-        mapComponent.add(rectPaintPath);
-        newMap[(node.x - 1).toInt()][(node.y).toInt()] = '0';
-        reachable.remove(Vector2((node.x) - 1, (node.y)));
-      }
-      if (newMap[(node.x + 1).toInt()][(node.y).toInt()] == 'f') {
-        reachable.insert(0, Vector2((node.x) + 1, (node.y)));
-        rectPaintPath = RectPaint(
-            position: Vector2((node.x + 1) * sizeTile, (node.y) * sizeTile));
-        mapComponent.add(rectPaintPath);
-      } else if (newMap[(node.x + 1).toInt()][(node.y).toInt()] != '0') {
-        closedWall++;
-        rectPaintPath = RectPaintRed(
-            position: Vector2((node.x + 1) * sizeTile, (node.y) * sizeTile));
-        mapComponent.add(rectPaintPath);
-        newMap[(node.x + 1).toInt()][(node.y).toInt()] = '0';
-        reachable.remove(Vector2((node.x) + 1, (node.y)));
-      }
-      if (newMap[(node.x).toInt()][(node.y + 1).toInt()] == 'f') {
-        reachable.insert(0, Vector2((node.x), (node.y) + 1));
-        rectPaintPath = RectPaint(
-            position: Vector2((node.x) * sizeTile, (node.y + 1) * sizeTile));
-        mapComponent.add(rectPaintPath);
-      } else if (newMap[(node.x).toInt()][(node.y + 1).toInt()] != '0') {
-        closedWall++;
-        rectPaintPath = RectPaintRed(
-            position: Vector2((node.x) * sizeTile, (node.y + 1) * sizeTile));
-        mapComponent.add(rectPaintPath);
-        newMap[(node.x).toInt()][(node.y + 1).toInt()] = '0';
-        reachable.remove(Vector2((node.x), (node.y) + 1));
-      }
-      if (newMap[(node.x).toInt()][(node.y - 1).toInt()] == 'f') {
-        reachable.insert(0, Vector2((node.x), (node.y) - 1));
-        rectPaintPath = RectPaint(
-            position: Vector2((node.x) * sizeTile, (node.y - 1) * sizeTile));
-        mapComponent.add(rectPaintPath);
-      } else if (newMap[(node.x).toInt()][(node.y - 1).toInt()] != '0') {
-        closedWall++;
-        rectPaintPath = RectPaintRed(
-            position: Vector2((node.x) * sizeTile, (node.y - 1) * sizeTile));
-        mapComponent.add(rectPaintPath);
-        newMap[(node.x).toInt()][(node.y - 1).toInt()] = '0';
-        reachable.remove(Vector2((node.x), (node.y) - 1));
-      }
-      if (closedWall == 4) {}
+    var grid = Grid(15, 14, newMap);
 
-      reachable.removeLast();
+    List path = AStarFinder()
+        .findPath(playerY, playerX, targetY, targetX, grid.clone());
 
-      newMap[(node.x).toInt()][(node.y).toInt()] = '0';
-      rectPaintPath = RectPaintRed(
-          position: Vector2((node.x) * sizeTile, (node.y) * sizeTile));
-      mapComponent.add(rectPaintPath);
-
-      //print(newMap[(_playerPos.x).toInt()][(_playerPos.y).toInt()]);
-
-      //Future.delayed(const Duration(milliseconds: 0), () {})
-      _playerPos = reachable.first;
-      print(reachable);
-    }
+    path.forEach((element) {
+      rectPaintRed = RectPaintRed(
+          position: Vector2((element[1]) * sizeTile, (element[0]) * sizeTile));
+      mapComponent.add(rectPaintRed);
+    });
+    print(path);
   }
 
-  void tapUp(mapComponent, player, myMap, mySizeTile) {
+  void tapUp(Component mapComponent, player, myMap, mySizeTile) {
     List map = myMap;
     double sizeTile = mySizeTile;
     mapComponent.remove(rectPaint);
+    mapComponent.remove(rectPaintRed);
+    mapComponent.children.every((element) {
+      if (element == rectPaintRed) {
+        element.removeFromParent();
+      }
+      return false;
+    });
   }
 
 ////////////////////////////////////////////////////////////////////////

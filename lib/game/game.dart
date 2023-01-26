@@ -8,6 +8,7 @@ import 'package:antaria/game/providers/provider.dart';
 import 'package:antaria/game/providers/provider2.dart';
 import 'package:antaria/main.dart';
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/palette.dart';
 import 'package:provider/provider.dart';
 import 'package:flame/game.dart';
@@ -46,6 +47,8 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
 
     await add(_mapComponent);
     await add(_playerComponent);
+    _playerComponent.position = Vector2(playerProvider2.playerPos.x * _sizeTile,
+        playerProvider2.playerPos.y * _sizeTile);
 
     camera.followComponent(_playerComponent);
     camera.worldBounds =
@@ -64,6 +67,7 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
 
   bool onTapUp(TapUpInfo info) {
     playerProvider2.tapUp(_mapComponent, _playerComponent, _map, _sizeTile);
+
     return true;
   }
 
@@ -76,8 +80,10 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
 
   @override
   void update(double dt) {
-    _playerComponent.position = Vector2(playerProvider2.playerPos.x * _sizeTile,
-        playerProvider2.playerPos.y * _sizeTile);
+    // _playerComponent.position = Vector2(playerProvider2.playerPos.x * _sizeTile,
+    //     playerProvider2.playerPos.y * _sizeTile);
+
+    //_playerComponent.add(effect);
 
     super.update(dt);
   }

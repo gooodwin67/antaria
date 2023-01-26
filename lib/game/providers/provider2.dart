@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:antaria/game/maps/map.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/palette.dart';
@@ -44,6 +45,10 @@ class PlayerProvider2 with ChangeNotifier {
   bool lookingPath = false;
   Vector2 targetPos = Vector2(0, 0);
   List newMap = [];
+  bool playerIsRun = false;
+  List path = [];
+  int pathLength = 0;
+  Vector2 distansePos = Vector2(0, 0);
 
   Vector2 get playerPos => _playerPos;
 
@@ -51,9 +56,15 @@ class PlayerProvider2 with ChangeNotifier {
 
   void tapDown(info, mapComponent, player, myMap, mySizeTile) {
     List map = myMap;
-
     double sizeTile = mySizeTile;
-    targetPos = Vector2(0, 0);
+
+    if (playerIsRun) {
+      print(path);
+      path = [];
+      print(path);
+
+      playerIsRun = false;
+    }
 
     for (int i = 0; i < map.length; i++) {
       for (int j = 0; j < map[i].length; j++) {
@@ -69,11 +80,10 @@ class PlayerProvider2 with ChangeNotifier {
       }
     }
 
-    lookingPath = true;
-    pathFind(playerPos, map, mapComponent, sizeTile);
+    pathFind(playerPos, map, mapComponent, sizeTile, player);
   }
 
-  pathFind(playerPos, map, mapComponent, sizeTile) async {
+  pathFind(playerPos, map, mapComponent, sizeTile, player) {
     //print(playerPos);
     //print(newMap);
 
@@ -99,7 +109,7 @@ class PlayerProvider2 with ChangeNotifier {
 
     var grid = Grid(15, 14, newMap);
 
-    List path = AStarFinder()
+    path = AStarFinder()
         .findPath(playerY, playerX, targetY, targetX, grid.clone());
 
     path.forEach((element) {
@@ -107,50 +117,44 @@ class PlayerProvider2 with ChangeNotifier {
           position: Vector2((element[1]) * sizeTile, (element[0]) * sizeTile));
       mapComponent.add(rectPaintRed);
     });
-    print(path);
+
+    pathLength = path.length;
+    path.isNotEmpty ? playerRun(path, map, sizeTile, player) : false;
   }
 
-  void tapUp(Component mapComponent, player, myMap, mySizeTile) {
-    List map = myMap;
+  void tapUp(Component mapComponent, player, myMap, mySizeTile) async {
+    //List map = myMap;
     double sizeTile = mySizeTile;
-    mapComponent.remove(rectPaint);
-    mapComponent.remove(rectPaintRed);
-    mapComponent.children.every((element) {
-      if (element == rectPaintRed) {
-        element.removeFromParent();
-      }
-      return false;
-    });
+    //mapComponent.remove(rectPaint);
+
+    notifyListeners();
   }
 
 ////////////////////////////////////////////////////////////////////////
 
-  void playerRun(info, player, myMap, mySizeTile) {
-    List _map = myMap;
-    double _sizeTile = mySizeTile;
-    int _x = (player.position.x / _sizeTile).toInt();
-    int _y = (player.position.y / _sizeTile).toInt();
+  void playerRun(path, map, sizeTile, player) async {
+    // int _x = (player.position.x / _sizeTile).toInt();
+    // int _y = (player.position.y / _sizeTile).toInt();
+    playerIsRun = true;
 
-    if (_map[_y][_x + 1] == '1') {
-      _playerPos.x = _playerPos.x + 1;
+    int a = 0;
 
-      _map[_y][_x + 1] = 'f';
-    } else if (_map[_y][_x - 1] == '1') {
-      _playerPos.x = _playerPos.x - 1;
-      _map[_y][_x - 1] = 'f';
-    } else if (_map[_y + 1][_x] == '1') {
-      _playerPos.y = _playerPos.y + 1;
-      _map[_y + 1][_x] = 'f';
-    } else if (_map[_y - 1][_x] == '1') {
-      _playerPos.y = _playerPos.y - 1;
+    while (a < pathLength) {
+      await Future.delayed(const Duration(milliseconds: 2000), () {})
+          .then((value) async {
+        _playerPos.x = await path[a][1].toDouble();
+        _playerPos.y = await path[a][0].toDouble();
 
-      // player.add(MoveEffect.to(
-      //   Vector2(500, 500),
-      //   EffectController(duration: 1.0),
-      // ));
+        await player.add(MoveToEffect(
+          Vector2(playerPos.x * sizeTile, playerPos.y * sizeTile),
+          EffectController(duration: 0.4),
+        ));
+      });
 
-      _map[_y - 1][_x] = 'f';
+      a++;
     }
+    playerIsRun = false;
+
     notifyListeners();
   }
 }

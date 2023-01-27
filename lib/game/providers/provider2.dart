@@ -56,14 +56,8 @@ class PlayerProvider2 with ChangeNotifier {
   void tapDown(info, mapComponent, player, myMap, mySizeTile) {
     List map = myMap;
     double sizeTile = mySizeTile;
-
-    if (playerIsRun) {
-      print(path);
-      path = [];
-      print(path);
-
-      playerIsRun = false;
-    }
+    playerIsRun = false;
+    path = [];
 
     for (int i = 0; i < map.length; i++) {
       for (int j = 0; j < map[i].length; j++) {
@@ -130,32 +124,46 @@ class PlayerProvider2 with ChangeNotifier {
     notifyListeners();
   }
 
+  void doSomething(Timer timer) {
+    print('Doing something ...');
+  }
+
 ////////////////////////////////////////////////////////////////////////
+  ///
 
   void playerRun(path, map, sizeTile, player) async {
     // int _x = (player.position.x / _sizeTile).toInt();
     // int _y = (player.position.y / _sizeTile).toInt();
-    playerIsRun = true;
+    //playerIsRun = true;
 
-    int a = 1;
+    //int a = 1;
 
-    while (a < pathLength) {
-      print(path);
-      print(_playerPos);
-      await Future.delayed(const Duration(milliseconds: 2000), () {})
-          .then((value) async {
-        _playerPos.x = await path[a][1].toDouble();
-        _playerPos.y = await path[a][0].toDouble();
+    // while (a < pathLength) {
+    //   print(path);
+    //   if (!playerIsRun) {
+    //     path = [];
+    //     break;
+    //   }
 
-        await player.add(MoveToEffect(
-          Vector2(playerPos.x * sizeTile, playerPos.y * sizeTile),
-          EffectController(duration: 0.4),
-        ));
-      });
-
-      a++;
-    }
-    playerIsRun = false;
+    //   await Future.delayed(const Duration(milliseconds: 1000), () {})
+    //       .then((value) async {
+    //     if (!playerIsRun) {
+    //       path = [];
+    //     }
+    //     if (path.isNotEmpty) _playerPos.x = path[a][1].toDouble();
+    //     if (path.isNotEmpty) _playerPos.y = path[a][0].toDouble();
+    //   });
+    //   player.add(MoveToEffect(
+    //     Vector2(playerPos.x * sizeTile, playerPos.y * sizeTile),
+    //     EffectController(duration: 0.4),
+    //   ));
+    //   a++;
+    // }
+    //playerIsRun = false;
+    new Timer(
+      1,
+      onTick: () => doSomething,
+    );
 
     notifyListeners();
   }

@@ -36,9 +36,8 @@ class PlayerProvider2 with ChangeNotifier {
   Vector2 _playerPos = Vector2(2, 2);
   final Vector2 _targetPos = Vector2(3, 3);
   bool isPlayerRun = false;
-  bool _isPlayerRunVert = false;
-  bool _isPlayerRunHor = false;
-  var rectPaint;
+
+  late RectPaint rectPaint;
   late Component rectPaintRed;
   var targetBlock = Vector2(3, 10);
   late List reachable = [_playerPos];
@@ -87,19 +86,20 @@ class PlayerProvider2 with ChangeNotifier {
     //print(playerPos);
     //print(newMap);
 
-    newMap = List.generate(
-        map[0].length, (_) => new List.generate(map.length, (index) => 0));
+    if (newMap.isEmpty) {
+      newMap = List.generate(
+          map[0].length, (_) => new List.generate(map.length, (index) => 0));
 
-    for (int i = 0; i < map[0].length; i++) {
-      for (int j = map.length - 1; j >= 0; j--) {
-        if (map[j][i] == 'w') {
-          newMap[i][j] = 1;
-        } else {
-          newMap[i][j] == 0;
+      for (int i = 0; i < map[0].length; i++) {
+        for (int j = map.length - 1; j >= 0; j--) {
+          if (map[j][i] == 'w') {
+            newMap[i][j] = 1;
+          } else {
+            newMap[i][j] == 0;
+          }
         }
       }
     }
-    //print(newMap);
 
     int targetX = (targetPos.x).toInt();
     int targetY = (targetPos.y).toInt();
@@ -137,9 +137,11 @@ class PlayerProvider2 with ChangeNotifier {
     // int _y = (player.position.y / _sizeTile).toInt();
     playerIsRun = true;
 
-    int a = 0;
+    int a = 1;
 
     while (a < pathLength) {
+      print(path);
+      print(_playerPos);
       await Future.delayed(const Duration(milliseconds: 2000), () {})
           .then((value) async {
         _playerPos.x = await path[a][1].toDouble();

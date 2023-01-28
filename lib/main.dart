@@ -1,7 +1,7 @@
 import 'package:antaria/game/game.dart';
 import 'package:antaria/game/maps/levels/level1.dart';
 import 'package:antaria/game/maps/map_provider.dart';
-import 'package:antaria/game/providers/provider.dart';
+import 'package:antaria/game/providers/test_provider.dart';
 import 'package:antaria/game/providers/provider2.dart';
 import 'package:flame/game.dart';
 
@@ -12,10 +12,10 @@ void main() => {
       WidgetsFlutterBinding.ensureInitialized(),
       runApp(MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => PlayerProvider()),
           ChangeNotifierProvider(create: (_) => PlayerProvider2()),
           ChangeNotifierProvider(create: (_) => MapProvider()),
           ChangeNotifierProvider(create: (_) => Level1Provider()),
+          ChangeNotifierProvider(create: (_) => TestProvider()),
         ],
         child: MyHomePage(),
       ))

@@ -15,7 +15,8 @@ import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 
-class MainGame extends FlameGame with HasGameRef, TapDetector {
+class MainGame extends FlameGame
+    with HasGameRef, TapDetector, HasCollisionDetection {
   MainGame(this.context, {super.children});
 
   BuildContext context;
@@ -59,7 +60,6 @@ class MainGame extends FlameGame with HasGameRef, TapDetector {
 
   @override
   bool onTapDown(TapDownInfo info) {
-    //playerProvider2.playerRun(info, _playerComponent, _map, _sizeTile);
     playerProvider2.tapDown(
         info, _mapComponent, _playerComponent, _map, _sizeTile);
     return true;

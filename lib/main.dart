@@ -1,4 +1,5 @@
 import 'package:antaria/game/game.dart';
+import 'package:antaria/game/maps/levels/level1.dart';
 import 'package:antaria/game/maps/map_provider.dart';
 import 'package:antaria/game/providers/provider.dart';
 import 'package:antaria/game/providers/provider2.dart';
@@ -14,6 +15,7 @@ void main() => {
           ChangeNotifierProvider(create: (_) => PlayerProvider()),
           ChangeNotifierProvider(create: (_) => PlayerProvider2()),
           ChangeNotifierProvider(create: (_) => MapProvider()),
+          ChangeNotifierProvider(create: (_) => Level1Provider()),
         ],
         child: MyHomePage(),
       ))
